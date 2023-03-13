@@ -1,0 +1,7 @@
+<dependencies>
+    <androidPackages>
+        <androidPackage spec="com.alipay.android.app:alipaysdk:15.3.6">
+        </androidPackage>
+    </androidPackages>
+</dependencies>
+
