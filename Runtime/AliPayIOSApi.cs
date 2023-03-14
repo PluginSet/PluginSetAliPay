@@ -5,7 +5,7 @@ using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-#if !UNITY_IOS
+#if UNITY_IOS && ENABLE_ALIPAY
 public static class AliPayIosApi
 {
     private static AliPayIOSApiLoginCallBack loginCbIns;
