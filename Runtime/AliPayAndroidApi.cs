@@ -107,7 +107,7 @@ namespace PluginSet.Alipay
 
         public static bool IsAppInstalled()
         {
-            return AliPayApi.CallStatic<bool>("IsAppInstalled");
+            return AliPayApi.CallStatic<bool>("IsAppInstalled", CurrentActivity);
         }
 
         public static void Login(string pluginName, string authInfo, Action<Result> callback)
