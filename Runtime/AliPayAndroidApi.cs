@@ -88,8 +88,22 @@ namespace PluginSet.Alipay
 
     public static class AliPayAndroidApi
     {
-        private static AndroidJavaClass AliPayApi = new AndroidJavaClass("com.pluginset.alipay.AliPayApi");
+        private static AndroidJavaClass _aliPayApi;
+
+        private static AndroidJavaClass AliPayApi
+        {
+            get
+            {
+                if (_aliPayApi == null)
+                    _aliPayApi = new AndroidJavaClass("com.pluginset.alipay.AliPayApi");
+
+                return _aliPayApi;
+            }
+        }
+
+
         private static AndroidJavaObject CurrentActivity => AndroidHelper.CurrentActivity;
+        
 
         public static bool IsAppInstalled()
         {
