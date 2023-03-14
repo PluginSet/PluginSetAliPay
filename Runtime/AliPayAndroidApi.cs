@@ -5,17 +5,10 @@ using UnityEngine;
 #if UNITY_ANDROID && ENABLE_ALIPAY
 namespace PluginSet.Alipay
 {
-    internal class AliPayAuthCallback : IPluginSetCallback
+    internal class AliPayAuthCallback : PluginSetCallback
     {
-        private string pluginName;
-        private Action<Result> callback;
         public AliPayAuthCallback(string pluginName, Action<Result> callback)
-        {
-            this.pluginName = pluginName;
-            this.callback = callback;
-        }
-        
-        public void onSuccess(string result)
+        :base(delegate(string result)
         {
             MainThread.Run(delegate
             {
@@ -28,9 +21,7 @@ namespace PluginSet.Alipay
                     DataObject = JsonUtility.FromJson<AuthResult>(result),
                 });
             });
-        }
-
-        public void onFailed(int code, string message)
+        }, delegate(int code, string message)
         {
             MainThread.Run(delegate
             {
@@ -42,21 +33,16 @@ namespace PluginSet.Alipay
                     Error = message,
                 });
             });
+        })
+        {
         }
     }
 
 
-    internal class AliPayPaymentCallback : IPluginSetCallback
+    internal class AliPayPaymentCallback : PluginSetCallback
     {
-        private string pluginName;
-        private Action<Result> callback;
         public AliPayPaymentCallback(string pluginName, Action<Result> callback)
-        {
-            this.pluginName = pluginName;
-            this.callback = callback;
-        }
-        
-        public void onSuccess(string result)
+        :base(delegate(string result)
         {
             MainThread.Run(delegate
             {
@@ -68,10 +54,7 @@ namespace PluginSet.Alipay
                     Data = result,
                 });
             });
-        }
-
-        public void onFailed(int code, string message)
-        {
+        }, delegate(int code, string message) { 
             MainThread.Run(delegate
             {
                 callback?.Invoke(new Result
@@ -82,6 +65,8 @@ namespace PluginSet.Alipay
                     Error = message,
                 });
             });
+         })
+        {
         }
     }
 
