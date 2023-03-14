@@ -2,142 +2,84 @@ using System;
 using PluginSet.Core;
 using UnityEngine;
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && ENABLE_ALIPAY
 namespace PluginSet.Alipay
 {
-
-    internal interface IAliPayApiCallback
+    internal class AliPayAuthCallback : IPluginSetCallback
     {
-        void onSuccess(string json);
-
-        void onFail(int errorCode);
-    }
-
-    internal abstract class AliPayCallbackAdapter : AndroidJavaProxy, IAliPayApiCallback
-    {
-        public AliPayCallbackAdapter()
-        : base("com.pluginset.alipaysdk.IAlipayApiCallback")
-        {
-
-        }
-
-        public abstract void onSuccess(string json);
-
-        public abstract void onFail(int errorCode);
-    }
-
-
-    internal class AliPayLoginCallback : AliPayCallbackAdapter
-    {
-        private struct Response
-        {
-            public int code;
-            public string authCode;
-            public string msg;
-
-            public Response(int code, string authCode, string msg)
-            {
-                this.code = code;
-                this.authCode = authCode;
-                this.msg = msg;
-            }
-        }
-
         private string pluginName;
         private Action<Result> callback;
-
-        public AliPayLoginCallback(string pName, Action<Result> cb)
+        public AliPayAuthCallback(string pluginName, Action<Result> callback)
         {
-            pluginName = pName;
-            callback = cb;
+            this.pluginName = pluginName;
+            this.callback = callback;
         }
-
-        public override void onSuccess(string json)
+        
+        public void onSuccess(string result)
         {
-            var resp = JsonUtility.FromJson<Response>(json);
-            MainThread.Run(() =>
+            MainThread.Run(delegate
             {
                 callback?.Invoke(new Result
                 {
-                    Success = true,
                     PluginName = pluginName,
-                    Code = resp.code,
-                    Error = resp.msg,
-                    Data = resp.authCode,
-                });
-            });
-        }
-
-        public override void onFail(int errorCode)
-        {
-            MainThread.Run(() =>
-            {
-                callback?.Invoke(new Result
-                {
-                    Success = false,
-                    PluginName = pluginName,
-                    Code = errorCode
-                });
-            });
-        }
-
-    }
-
-
-    internal class AliPayPaymentCallback : AliPayCallbackAdapter
-    {
-        private struct Response
-        {
-            public string prepayId;
-            public string returnKey;
-            public string extData;
-
-            public Response(string prepayId, string returnKey, string extData)
-            {
-                this.prepayId = prepayId;
-                this.returnKey = returnKey;
-                this.extData = extData;
-            }
-        }
-
-        private Action<Result> callback;
-        private string pluginName;
-        private string prodcutId;
-        private string extraData;
-
-        public AliPayPaymentCallback(string pName, string pId, string extra, Action<Result> cb)
-        {
-            callback = cb;
-            pluginName = pName;
-            prodcutId = pId;
-            extraData = extra;
-        }
-
-        public override void onSuccess(string json)
-        {
-            var resp = JsonUtility.FromJson<Response>(json);
-            MainThread.Run(() =>
-            {
-                callback?.Invoke(new Result
-                {
                     Success = true,
                     Code = 0,
-                    PluginName = pluginName,
-                    Data = resp.extData
+                    Data = result,
+                    DataObject = JsonUtility.FromJson<AuthResult>(result),
                 });
             });
         }
 
-        public override void onFail(int errorCode)
+        public void onFailed(int code, string message)
         {
-            MainThread.Run(() =>
+            MainThread.Run(delegate
             {
                 callback?.Invoke(new Result
                 {
-                    Success = false,
-                    Code = errorCode,
                     PluginName = pluginName,
-                    Data = extraData,
+                    Success = false,
+                    Code = code,
+                    Error = message,
+                });
+            });
+        }
+    }
+
+
+    internal class AliPayPaymentCallback : IPluginSetCallback
+    {
+        private string pluginName;
+        private Action<Result> callback;
+        public AliPayPaymentCallback(string pluginName, Action<Result> callback)
+        {
+            this.pluginName = pluginName;
+            this.callback = callback;
+        }
+        
+        public void onSuccess(string result)
+        {
+            MainThread.Run(delegate
+            {
+                callback?.Invoke(new Result
+                {
+                    PluginName = pluginName,
+                    Success = true,
+                    Code = 0,
+                    Data = result,
+                });
+            });
+        }
+
+        public void onFailed(int code, string message)
+        {
+            MainThread.Run(delegate
+            {
+                callback?.Invoke(new Result
+                {
+                    PluginName = pluginName,
+                    Success = false,
+                    Code = code,
+                    Error = message,
                 });
             });
         }
@@ -146,40 +88,22 @@ namespace PluginSet.Alipay
 
     public static class AliPayAndroidApi
     {
-        private static AndroidJavaClass AlipayApi = new AndroidJavaClass("com.pluginset.alipaysdk.AlipayApi");
+        private static AndroidJavaClass AliPayApi = new AndroidJavaClass("com.pluginset.alipay.AliPayApi");
+        private static AndroidJavaObject CurrentActivity => AndroidHelper.CurrentActivity;
 
-        private static AndroidJavaObject _alipayApiInst;
-        private static AndroidJavaObject AlipayApiInst
+        public static bool IsAppInstalled()
         {
-            get
-            {
-                if (_alipayApiInst == null)
-                {
-                    _alipayApiInst = AlipayApi.CallStatic<AndroidJavaObject>("GetInstance");
-                }
-                return _alipayApiInst;
-            }
+            return AliPayApi.CallStatic<bool>("IsAppInstalled");
         }
-
-        public static void InitApi(string appId)
-        {
-            AlipayApiInst.Call("InitApi", AndroidHelper.CurrentActivity, appId);
-        }
-
-        public static bool IsAliPayInstalled()
-        {
-            return AlipayApiInst.Call<bool>("IsAlipayInstalled");
-        }
-
 
         public static void Login(string pluginName, string authInfo, Action<Result> callback)
         {
-            AlipayApiInst.Call("Login", authInfo, new AliPayLoginCallback(pluginName, callback));
+            AliPayApi.CallStatic("Login", CurrentActivity, authInfo, new AliPayAuthCallback(pluginName, callback));
         }
 
-        public static void Pay(string pluginName, string productId, string jsonData, Action<Result> callback)
+        public static void Pay(string pluginName, string orderInfo, Action<Result> callback)
         {
-            AlipayApiInst.Call("Pay", productId, jsonData, new AliPayPaymentCallback(pluginName, productId, jsonData, callback));
+            AliPayApi.Call("Pay", CurrentActivity, orderInfo, new AliPayPaymentCallback(pluginName, callback));
         }
     }
 }

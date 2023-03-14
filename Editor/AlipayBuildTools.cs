@@ -28,6 +28,22 @@ namespace PluginSet.Alipay.Editor
             Global.CopyDependenciesInLib("com.pluginset.alipay");
         }
         
+        [AndroidProjectModify]
+        public static void OnAndroidManifestModify(BuildProcessorContext context, AndroidProjectManager projectManager)
+        {
+            var buildParams = context.BuildChannels.Get<BuildAliPayParams>();
+            if (!buildParams.Enable)
+                return;
+
+            // 根据Android官方给出的适配方案，在主工程的AndroidManifest.xml 中增加 <queries> 标签，即可解决以上影响，代码如下：
+            var doc = projectManager.LauncherManifest;
+            if (projectManager.LauncherGradle.TargetSdkVersion >= 28)
+            {
+                doc.addQueries("com.eg.android.AlipayGphone");
+                doc.addQueries("hk.alipay.wallet");
+            }
+        }
+        
 
         [iOSXCodeProjectModify]
         public static void OnIosXCodeProjectModify(BuildProcessorContext context, PBXProjectManager project)

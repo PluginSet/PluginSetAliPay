@@ -5,14 +5,16 @@ using PluginSet.Core;
 #if ENABLE_ALIPAY
 namespace PluginSet.Alipay
 {
+    public struct AuthResult
+    {
+        public string auth_code;
+        public string alipay_open_id;
+    }
+    
     [PluginRegister]
-    public class PluginAliPay : PluginBase, IStartPlugin, ILoginPlugin
+    public class PluginAliPay : PluginBase, ILoginPlugin, IPaymentPlugin
     {
         public override string Name => "Alipay";
-
-        public int StartOrder => 0;
-
-        public bool IsRunning { get; private set; }
 
         public bool IsEnableLogin => IsInstalled();
         public bool IsLoggedIn => !string.IsNullOrEmpty(userLoginData);
@@ -20,14 +22,6 @@ namespace PluginSet.Alipay
         public bool IsEnablePayment => IsInstalled();
         
         private string userLoginData = null;
-
-        private string _appId;
-
-        protected override void Init(PluginSetConfig config)
-        {
-            var aliPay = config.Get<PluginAliPayConfig>("AliPay");
-            _appId = aliPay.AppId;
-        }
         
         public void Login(Action<Result> callback = null, string authInfo = null)
         {
@@ -66,31 +60,30 @@ namespace PluginSet.Alipay
             return userLoginData;
         }
 
-        public IEnumerator StartPlugin()
-        {
-            if (IsRunning)
-                yield break;
-            
-#if UNITY_ANDROID && !UNITY_EDITOR
-            AliPayAndroidApi.InitApi(_appId);
-#elif UNITY_IOS && !UNITY_EDITOR
-            AliPayIosApi.InitApi(_appId);
-#endif
-            IsRunning = true;
-        }
-
-        public void DisposePlugin(bool isAppQuit = false)
-        {
-        }
-
         private bool IsInstalled()
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            return AliPayAndroidApi.IsAliPayInstalled();
+            return AliPayAndroidApi.IsAppInstalled();
 #elif UNITY_IOS && !UNITY_EDITOR
             return AliPayIosApi.IsAliPayInstalled();
 #else
             return false;
+#endif
+        }
+
+        public void Pay(string productId, Action<Result> callback = null, string orderInfo = null)
+        {
+#if UNITY_ANDROID && !UNITY_EDITOR
+            AliPayAndroidApi.Pay(Name, orderInfo, callback);
+//#elif UNITY_IOS && !UNITY_EDITOR
+#else
+            callback?.Invoke(new Result
+            {
+                PluginName = Name,
+                Success = false,
+                Code = PluginConstants.FailDefaultCode,
+                Error = "Invalid platform for aliPay"
+            });
 #endif
         }
     }
