@@ -14,7 +14,7 @@ namespace PluginSet.Alipay
     [PluginRegister]
     public class PluginAliPay : PluginBase, ILoginPlugin, IPaymentPlugin
     {
-        public override string Name => "Alipay";
+        public override string Name => "AliPay";
 
         public bool IsEnableLogin => IsInstalled();
         public bool IsLoggedIn => !string.IsNullOrEmpty(userLoginData);
