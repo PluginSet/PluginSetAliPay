@@ -6,6 +6,6 @@ namespace PluginSet.Alipay
     [PluginSetConfig("AliPay")]
     public class PluginAliPayConfig : ScriptableObject
     {
-        public string AppId;
+        public string Scheme;
     }
 }

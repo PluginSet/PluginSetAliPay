@@ -8,10 +8,8 @@ namespace PluginSet.Alipay.Editor
     {
         [Tooltip("支付宝未安装时API是否可用")]
         public bool Enable;
-        
-        [Tooltip("支付宝SDK提供的AppId参数")]
-        public string AppId;
 
+        [Tooltip("支付宝唤起该应用使用的Scheme（IOS用）")]
         public string Scheme;
     }
 }

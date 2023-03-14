@@ -23,7 +23,7 @@ namespace PluginSet.Alipay.Editor
 
             var pluginConfig = context.Get<PluginSetConfig>("pluginsConfig");
             var config = pluginConfig.Get<PluginAliPayConfig>("AliPay");
-            config.AppId = buildParams.AppId;
+            config.Scheme = buildParams.Scheme;
             
             Global.CopyDependenciesInLib("com.pluginset.alipay");
         }
@@ -56,12 +56,6 @@ namespace PluginSet.Alipay.Editor
                 return;
             
             project.PlistDocument.AddXcodeURLType("aliLogin", "Editor", buildParams.Scheme);
-            
-            // TODO FIX
-            var sFullPath = Path.Combine(project.ProjectPath, "Libraries", "com.pluginset.alipay", "Plugins", "iOS", "AliPayApiManager.mm");
-            var sCtx = File.ReadAllText(sFullPath);
-            sCtx = sCtx.Replace("aliScheme.xxx", buildParams.Scheme);
-            File.WriteAllText(sFullPath, sCtx);
         }
     }
 }
