@@ -14,7 +14,7 @@ namespace PluginSet.Alipay.Editor
             if (context.BuildTarget != BuildTarget.Android && context.BuildTarget != BuildTarget.iOS)
                 return;
             
-            var buildParams = context.BuildChannels.Get<BuildAliPayParams>("AliPay");
+            var buildParams = context.BuildChannels.Get<BuildAliPayParams>();
             if (!buildParams.Enable)
                 return;
 
@@ -22,7 +22,7 @@ namespace PluginSet.Alipay.Editor
             context.Symbols.Add("ENABLE_ALIPAY");
 
             var pluginConfig = context.Get<PluginSetConfig>("pluginsConfig");
-            var config = pluginConfig.Get<PluginAliPayConfig>("AliPay");
+            var config = pluginConfig.AddConfig<PluginAliPayConfig>("AliPay");
             config.Scheme = buildParams.Scheme;
             
             Global.CopyDependenciesInLib("com.pluginset.alipay");
@@ -51,7 +51,7 @@ namespace PluginSet.Alipay.Editor
             if (context.BuildTarget != BuildTarget.iOS)
                 return;
             
-            var buildParams = context.BuildChannels.Get<BuildAliPayParams>("AliPay");
+            var buildParams = context.BuildChannels.Get<BuildAliPayParams>();
             if (!buildParams.Enable)
                 return;
             
