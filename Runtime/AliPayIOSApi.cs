@@ -32,19 +32,12 @@ public static class AliPayIosApi
 
     private static class AliPayIOSApiInst
     {
-            [DllImport("__Internal")]
-            public static extern void InitAliApi(string appid);
 
             [DllImport("__Internal")]
             public static extern bool IsAlipayInstalled();
 
             [DllImport("__Internal")]
-            public static extern void LoginAli(string objName,string authUrl);
-    }
-
-    public static void InitApi(string appId)
-    {
-        AliPayIOSApiInst.InitAliApi(appId);
+            public static extern void LoginAli(string objName, string scheme, string authUrl);
     }
 
     public static bool IsAliPayInstalled()
@@ -52,7 +45,7 @@ public static class AliPayIosApi
         return AliPayIOSApiInst.IsAlipayInstalled();
     }
 
-    public static void Login(string authInfo, Action<Result> callback)
+    public static void Login(string authInfo, string scheme, Action<Result> callback)
     {
         if (!loginCbIns)
         {
@@ -60,7 +53,7 @@ public static class AliPayIosApi
             UnityEngine.GameObject.DontDestroyOnLoad(loginCbIns.gameObject);
         }
         loginCbIns.loginCb = callback;
-        AliPayIOSApiInst.LoginAli("AliPayIOSApiLoginCallBack", authInfo);
+        AliPayIOSApiInst.LoginAli("AliPayIOSApiLoginCallBack", scheme, authInfo);
     }
 }
 

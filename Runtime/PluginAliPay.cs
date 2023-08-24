@@ -22,7 +22,15 @@ namespace PluginSet.Alipay
         public bool IsEnablePayment => IsInstalled();
         
         private string userLoginData = null;
-        
+
+        private string _scheme = null;
+
+        protected override void Init(PluginSetConfig config)
+        {
+            var data = config.Get<PluginAliPayConfig>();
+            _scheme = data.Scheme;
+        }
+
         public void Login(Action<Result> callback = null, string authInfo = null)
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
@@ -33,7 +41,7 @@ namespace PluginSet.Alipay
                 callback?.Invoke(result);
             });
 #elif UNITY_IOS && !UNITY_EDITOR
-            AliPayIosApi.Login(authInfo, delegate(Result result)
+            AliPayIosApi.Login(authInfo, _scheme, delegate(Result result)
             {
                 if (result.Success)
                     userLoginData = result.Data;

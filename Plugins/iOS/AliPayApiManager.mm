@@ -1,5 +1,4 @@
 #import "AliPayApiManager.h"
-const char* ALI_LOGIN_SCHEME = "aliScheme.xxx";
 
 extern "C" {
      void UnitySendMessage(const char *, const char *, const char *);
@@ -11,8 +10,8 @@ extern "C" {
           return [AliPayApiManager IsAliPayInstalled];
      }
 
-     void LoginAli(const char* objName,const char* authUrl){
-          [AliPayApiManager Login:objName authUrl:authUrl];
+     void LoginAli(const char* objName, const char* scheme,const char* authUrl){
+          [AliPayApiManager Login:objName scheme:scheme authUrl:authUrl];
      }
 }
 
@@ -40,10 +39,10 @@ static AliPayApiManager *_instance;
     return b;
 }
 
-+(void)Login:(const char*)objName authUrl:(const char*)url {
++(void)Login:(const char*)objName scheme:(const char*)scheme authUrl:(const char*)url {
      NSString* authUrl = [NSString stringWithFormat:@"%s",url];
-    [AliPayApiManager Instance]._cbObjName = [NSString stringWithFormat:@"%s",objName];
-     [[AlipaySDK defaultService] auth_V2WithInfo:authUrl fromScheme:[NSString stringWithUTF8String:ALI_LOGIN_SCHEME] callback:^(NSDictionary *resultDic) {
+     [AliPayApiManager Instance]._cbObjName = [NSString stringWithFormat:@"%s",objName];
+     [[AlipaySDK defaultService] auth_V2WithInfo:authUrl fromScheme:[NSString stringWithUTF8String:scheme] callback:^(NSDictionary *resultDic) {
           NSString *cbObjName = [AliPayApiManager Instance]._cbObjName;
           if(cbObjName != nil){
                NSString *result = resultDic[@"result"];

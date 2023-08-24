@@ -1,20 +1,16 @@
 #import <AlipaySDK/AlipaySDK.h>
 
+#import "AliPayApiManager.h"
+
 #import "PluginListener.h"
 #import "PluginUtils.h"
 
 #import "NSDictionary+SafeUseDictionary.h"
 
-@interface PluginAliPay : NSObject<PluginListener, WXApiDelegate>
-@property int _loginRequestId;
+@interface PluginAliPay : NSObject<PluginListener>
 @end
 
 REGISTER_PLUGIN_LISTENER(PluginAliPay)
-
-NSString* _u3dGameStr;
-NSString* _u3dCallStr;
-const char* u3dGameObject;
-const char* u3dCallback;
 
 @implementation PluginAliPay
 
@@ -33,43 +29,11 @@ const char* u3dCallback;
     }
 }
 
-- (void) loginRequest
+-(void)OnLoginFail:(const char*) objName
 {
-    int requestId = ++self._loginRequestId;
-    NSString * requestState = [NSString stringWithFormat:@"request_%d", requestId];
-    
-    SendAuthReq * request = [SendAuthReq new];
-    request.scope = @"snsapi_userinfo";
-    request.state = requestState;
-    [WXApi sendReq:request completion:^(BOOL success) {
-        if (success) {
-            NSLog(@"wechat login callback gives success");
-        } else {
-            NSLog(@"wechat login callback gives failure");
-            [self OnCompleteFailCall:@"wechat login callback gives failure"];
-        }
-    }];
-}
-
--(void)OnCompleteSuccessCall:(NSString*)msg
-{
-    NSDictionary* receiveMap = @{@"isSuccess":@"true",@"code":msg};
+    NSDictionary* receiveMap = @{@"status":@1};
     NSString* jsonStr = [PluginUtils dictToJson:receiveMap];
-    const char *p1 = [jsonStr UTF8String];
-    [self OnCallUnityC:p1];
-}
-
--(void)OnCompleteFailCall:(NSString*)msg
-{
-    NSDictionary* receiveMap = @{@"isSuccess":@"false",@"code":msg};
-    NSString* jsonStr = [PluginUtils dictToJson:receiveMap];
-    const char *p1 = [jsonStr UTF8String];
-    [self OnCallUnityC:p1];
-}
-
--(void)OnCallUnityC:(const char*) msg
-{
-    UnitySendMessage(u3dGameObject,u3dCallback,msg);
+    UnitySendMessage(objName, "onAliPayLoginRet", [jsonStr UTF8String]);
 }
 
 #if defined(__cplusplus)
@@ -77,22 +41,22 @@ extern "C"
 {
 #endif
     //是否使用微信登陆
-    bool IsAppInstalled()
+    bool IsAlipayInstalled()
     {
-        return [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"alipay://"]];
+        return [AliPayApiManager IsAliPayInstalled];
     }
     
     //发起登陆
-    void Login(const char* autoInfo, const char* scheme)
+    void Login(const char* objName, const char* scheme, const char* autoInfo)
     {
-        NSLog(@"called wechat login");
+        NSLog(@"called alipay login");
 
         //判断用户是否已安装微信App
-        if ([WXApi isWXAppInstalled]) {
-            [[PluginAliPay GetInstance] loginRequest];
+        if (IsAlipayInstalled()) {
+            [AliPayApiManager Login:objName scheme:scheme authUrl:autoInfo];
         } else {
-            NSLog(@"wechat is not installed, cant login");
-            [[PluginAliPay GetInstance] OnCompleteFailCall:@"wechat_not_installed"];
+            NSLog(@"alipay is not installed, cant login");
+            [[PluginAliPay GetInstance] OnLoginFail:objName];
         }
     }
     

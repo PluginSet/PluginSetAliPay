@@ -7,6 +7,6 @@
 + (instancetype)Instance;
 + (void)InitApi:(const char *)appid;
 + (bool)IsAliPayInstalled;
-+ (void)Login:(const char *)objName authUrl:(const char *)url;
++ (void)Login:(const char*)objName scheme:(const char*)scheme authUrl:(const char*)url;
 + (void)handleOpenURL:(NSURL *)url;
 @end
