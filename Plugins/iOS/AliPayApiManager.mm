@@ -35,7 +35,7 @@ static AliPayApiManager *_instance;
 }
 
 +(bool)IsAliPayInstalled{
-    bool b = [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"alipay://"]];
+    bool b = [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"alipay:"]];
     return b;
 }
 
