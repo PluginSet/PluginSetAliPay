@@ -55,6 +55,7 @@ namespace PluginSet.Alipay.Editor
             if (!buildParams.Enable)
                 return;
             
+            project.PlistDocument.AddApplicationQueriesSchemes("alipay");
             project.PlistDocument.AddXcodeURLType("aliLogin", "Editor", buildParams.Scheme);
         }
     }

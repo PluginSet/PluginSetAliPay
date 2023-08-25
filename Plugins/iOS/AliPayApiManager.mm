@@ -1,19 +1,5 @@
 #import "AliPayApiManager.h"
-
-extern "C" {
-     void UnitySendMessage(const char *, const char *, const char *);
-     void InitAliApi(const char* appid){
-
-     }
-
-     bool IsAliPayInstalled(){
-          return [AliPayApiManager IsAliPayInstalled];
-     }
-
-     void LoginAli(const char* objName, const char* scheme,const char* authUrl){
-          [AliPayApiManager Login:objName scheme:scheme authUrl:authUrl];
-     }
-}
+#import "PluginUtils.h"
 
 @interface AliPayApiManager()
 @end
@@ -62,7 +48,11 @@ static AliPayApiManager *_instance;
                if([status isEqual:@"9000"]){
                     nStatus = 0;
                }
-               NSString* ret = [NSString stringWithFormat:@"{'status':%d,'code':'%@','resultStatus':'%@'}",nStatus,authCode,status];
+               NSString * ret = [PluginUtils dictToJson:@{
+                 @"status": @(nStatus),
+                 @"code": authCode,
+                 @"resultStatus": status
+               }];
                UnitySendMessage([cbObjName UTF8String],"onAliPayLoginRet",[ret UTF8String]);
           }
      }];

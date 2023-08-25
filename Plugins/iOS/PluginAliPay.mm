@@ -26,7 +26,12 @@ REGISTER_PLUGIN_LISTENER(PluginAliPay)
         [[AlipaySDK defaultService] processOrderWithPaymentResult:url standbyCallback:^(NSDictionary *resultDic) {
             NSLog(@"result = %@",resultDic);
         }];
+        
+        [[AlipaySDK defaultService] processAuth_V2Result:url standbyCallback:^(NSDictionary *resultDic) {
+            NSLog(@"result = %@",resultDic);
+        }];
     }
+    
 }
 
 -(void)OnLoginFail:(const char*) objName
@@ -47,7 +52,7 @@ extern "C"
     }
     
     //发起登陆
-    void Login(const char* objName, const char* scheme, const char* autoInfo)
+    void LoginAli(const char* objName, const char* scheme, const char* autoInfo)
     {
         NSLog(@"called alipay login");
 
