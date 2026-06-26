@@ -41,23 +41,24 @@ namespace PluginSet.Alipay
 
     internal class AliPayPaymentCallback : PluginSetCallback
     {
-        public AliPayPaymentCallback(string pluginName, Action<Result> callback)
+        public AliPayPaymentCallback(string pluginName, Action<PurchaseResult> callback)
         :base(delegate(string result)
         {
             MainThread.Run(delegate
             {
-                callback?.Invoke(new Result
+                callback?.Invoke(new PurchaseResult
                 {
                     PluginName = pluginName,
                     Success = true,
                     Code = 0,
                     Data = result,
+                    DataObject = null,
                 });
             });
         }, delegate(int code, string message) { 
             MainThread.Run(delegate
             {
-                callback?.Invoke(new Result
+                callback?.Invoke(new PurchaseResult
                 {
                     PluginName = pluginName,
                     Success = false,
@@ -100,7 +101,7 @@ namespace PluginSet.Alipay
             AliPayApi.CallStatic("Login", CurrentActivity, authInfo, new AliPayAuthCallback(pluginName, callback));
         }
 
-        public static void Pay(string pluginName, string orderInfo, Action<Result> callback)
+        public static void Pay(string pluginName, string orderInfo, Action<PurchaseResult> callback)
         {
             AliPayApi.Call("Pay", CurrentActivity, orderInfo, new AliPayPaymentCallback(pluginName, callback));
         }

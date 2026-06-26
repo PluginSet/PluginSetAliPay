@@ -20,7 +20,7 @@ namespace PluginSet.Alipay
         public bool IsLoggedIn => !string.IsNullOrEmpty(userLoginData);
         
         public bool IsEnablePayment => IsInstalled();
-        
+
         private string userLoginData = null;
 
         private string _scheme = null;
@@ -79,13 +79,13 @@ namespace PluginSet.Alipay
 #endif
         }
 
-        public void Pay(string productId, Action<Result> callback = null, string orderInfo = null)
+        public void Pay(string productId, Action<PurchaseResult> callback = null, string jsonData = null)
         {
 #if UNITY_ANDROID && !UNITY_EDITOR
-            AliPayAndroidApi.Pay(Name, orderInfo, callback);
+            AliPayAndroidApi.Pay(Name, jsonData, callback);
 //#elif UNITY_IOS && !UNITY_EDITOR
 #else
-            callback?.Invoke(new Result
+            callback?.Invoke(new PurchaseResult()
             {
                 PluginName = Name,
                 Success = false,
